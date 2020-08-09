@@ -1,0 +1,7 @@
+server:
+  port: 8060
+spring:
+  application:
+    name: chatting-server
+  profiles:
+    active: local
