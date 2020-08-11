@@ -5,13 +5,17 @@ import com.sunny.chat.repository.ChatRoomRepository
 import com.sunny.chat.service.pubsub.RedisPublisher
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.messaging.handler.annotation.MessageMapping
-import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.CrossOrigin
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 import java.sql.Timestamp
+import java.time.Instant
+import java.time.LocalDateTime
+import java.util.stream.Collectors
 
-
-@Controller
+@CrossOrigin
+@RestController
 class ChatController {
     @Autowired
     lateinit var redisPublisher: RedisPublisher
@@ -20,7 +24,7 @@ class ChatController {
 
     @MessageMapping("/chat/message")
     fun message(message: ChatMessage) {
-        message.createdAt = Timestamp(System.currentTimeMillis())
+        message.timestamp = Instant.now().toEpochMilli().toString()
 
 //        if(ChatMessageType.ENTER == message.messageType) {
 //            chatRoomRepository!!.enterChatRoom(message.productId)
@@ -28,21 +32,21 @@ class ChatController {
 //        }
 
         // add to history
-
-        if (chatRoomRepository!!.findRoomById(message.productId) == null) {
-            chatRoomRepository!!.enterChatRoom(message.productId)
-        }
+        chatRoomRepository!!.setTopic(message.productId!!)
 
         chatRoomRepository!!.insertChatMessage(message)
 
-        chatRoomRepository!!.getTopic(message.productId)?.let { redisPublisher.publish(it, message) }
+        chatRoomRepository.getTopic(message.productId!!)?.let { redisPublisher.publish(it, message) }
     }
 
-    @RequestMapping("/products/{productId}/history")
-    @Throws(Exception::class)
-    fun getChattingHistory(@PathVariable productId: Long): List<Any>? {
+    @GetMapping("/products/{productId}/history")
+    fun getChattingHistory(@PathVariable productId: Long): List<ChatMessage> {
         println("history!")
+        val data: List<ChatMessage> = chatRoomRepository!!.findAllChatMessagesByProductId(productId) as List<ChatMessage>
+                ?: return ArrayList<ChatMessage>()
 
-        return chatRoomRepository!!.findAllChatMessagesByProductId(productId)
+        println("data size: " + data.size)
+
+        return data.sortedBy { item -> item.timestamp }
     }
 }

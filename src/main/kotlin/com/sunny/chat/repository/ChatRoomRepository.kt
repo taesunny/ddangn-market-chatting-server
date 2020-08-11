@@ -13,6 +13,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer
 import org.springframework.stereotype.Repository
 import java.util.*
 import javax.annotation.PostConstruct
+import kotlin.collections.ArrayList
 
 @Repository
 class ChatRoomRepository {
@@ -22,56 +23,54 @@ class ChatRoomRepository {
     lateinit var redisSubscriber: RedisSubscriber
     @Autowired
     lateinit var redisTemplate: RedisTemplate<String, Any>
-    @Autowired
-    lateinit var redisMessageTemplate: RedisTemplate<String, ChatMessage>
-    lateinit var opsHashChatRoom: HashOperations<String, Long, ChatRoom>
-    lateinit var opsHashChatMessage: ListOperations<String, ChatMessage>
+    lateinit var opsListChatMessage: ListOperations<String, Any>
+//    lateinit var opsHashChatMessage: ListOperations<String, ChatMessage>
     lateinit var topics: MutableMap<Long, ChannelTopic>
 
     @PostConstruct
     private fun init() {
-        opsHashChatRoom = redisTemplate.opsForHash<Long, ChatRoom>()
-        opsHashChatMessage = redisMessageTemplate.opsForList()
+        opsListChatMessage = redisTemplate.opsForList()
         topics = HashMap()
     }
 
-    fun findAllRoom(): List<ChatRoom> {
-        return opsHashChatRoom.values(CHAT_ROOMS)
-    }
-
-    fun findRoomById(id: Long): ChatRoom? {
-        return opsHashChatRoom[CHAT_ROOMS, id]
-    }
-
-    fun createChatRoom(productId: Long): ChatRoom {
-        val chatRoom: ChatRoom = ChatRoom(productId)
-        opsHashChatRoom.put(CHAT_ROOMS, chatRoom.chatRoomId, chatRoom)
-        return chatRoom
-    }
+//    fun findAllRoom(): List<ChatRoom> {
+//        return opsHashChatRoom.values(CHAT_ROOMS)
+//    }
+//
+//    fun findRoomById(id: Long): ChatRoom? {
+//        return opsHashChatRoom[CHAT_ROOMS, id]
+//    }
+//
+//    fun createChatRoom(productId: Long): ChatRoom {
+//        val chatRoom: ChatRoom = ChatRoom(productId)
+//        opsHashChatRoom.put(CHAT_ROOMS, chatRoom.chatRoomId, chatRoom)
+//        return chatRoom
+//    }
 
     fun insertChatMessage(chatMessage: ChatMessage) {
 //        opsHashChatMessage.add(CHAT_MESSAGE + chatMessage.productId, chatMessage, chatMessage.createdAt!!.time.toDouble())
-        opsHashChatMessage.leftPush(CHAT_MESSAGE + chatMessage.productId, chatMessage)
-        opsHashChatMessage.trim(CHAT_MESSAGE + chatMessage.productId, 0, CHAT_MESSAGE_MAX_SIZE-1)
+        opsListChatMessage.leftPush(CHAT_MESSAGE + chatMessage.productId, chatMessage)
+        opsListChatMessage.trim(CHAT_MESSAGE + chatMessage.productId, 0, CHAT_MESSAGE_MAX_SIZE-1)
     }
 
     fun findAllChatMessagesByProductId(productId: Long): List<Any>? {
 //        val data: Set<ChatMessage>? = opsHashChatMessage.range(CHAT_MESSAGE + productId, 0, 10) as Set<ChatMessage>?
 //        data ?: return ArrayList<ChatMessage>()
 //        return data.toList()
-        return opsHashChatMessage.range(CHAT_MESSAGE + productId, 0, 20)
+
+        return opsListChatMessage.range(CHAT_MESSAGE + productId, 0, 20)
     }
 
-    fun enterChatRoom(roomId: Long) {
-        if (!topics.containsKey(roomId)) {
-            var topic = ChannelTopic(roomId.toString())
+    fun setTopic(productId: Long) {
+        if (!topics.containsKey(productId)) {
+            var topic = ChannelTopic(productId.toString())
             redisMessageListener.addMessageListener(redisSubscriber, topic)
-            topics[roomId] = topic
+            topics[productId] = topic
         }
     }
 
-    fun getTopic(roomId: Long): ChannelTopic? {
-        return topics[roomId]
+    fun getTopic(productId: Long): ChannelTopic? {
+        return topics[productId]
     }
 
     companion object {

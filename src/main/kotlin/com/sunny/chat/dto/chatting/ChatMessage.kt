@@ -3,11 +3,21 @@ package com.sunny.chat.dto.chatting
 import java.io.Serializable
 import java.sql.Timestamp
 
-class ChatMessage(productId: Long, userId: Long?, userEmail: String?, message: String, messageType: ChatMessageType): Serializable {
-    var productId: Long = productId
-    var userId: Long? = userId
-    var userEmail: String? = userEmail
-    var message: String = message
-    var messageType: ChatMessageType = messageType
-    var createdAt: Timestamp? = null
+class ChatMessage: Serializable {
+    var productId: Long? = null
+    var authorId: String? = null // same with author
+    var author: String? = null
+    var message: String? = null
+    var messageType: ChatMessageType? = null
+    var timestamp: String? = null
+
+    constructor()
+
+    constructor(productId: Long, author: String?, message: String, messageType: ChatMessageType) {
+        this.productId = productId
+        this.authorId = author
+        this.author = author
+        this.message = message
+        this.messageType = messageType
+    }
 }
