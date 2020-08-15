@@ -13,7 +13,7 @@ class ChatMessage: Serializable {
 
     constructor()
 
-    constructor(productId: Long, author: String?, message: String, messageType: ChatMessageType) {
+    constructor(productId: Long, author: String, message: String, messageType: ChatMessageType) {
         this.productId = productId
         this.authorId = author
         this.author = author

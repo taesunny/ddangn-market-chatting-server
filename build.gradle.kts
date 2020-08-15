@@ -48,6 +48,11 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test") {
 		exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
 	}
+
+	implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.2.3.RELEASE")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+	implementation("org.keycloak:keycloak-spring-boot-starter:10.0.2")
+	implementation("org.keycloak.bom:keycloak-adapter-bom:10.0.2")
 }
 
 tasks.withType<Test> {
