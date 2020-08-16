@@ -23,7 +23,7 @@ class WebSocketConfig: WebSocketMessageBrokerConfigurer {
     }
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
-        registry.addEndpoint("/chatting").setAllowedOrigins("http://ddangn.taesunny.com")
+        registry.addEndpoint("/chatting").setAllowedOrigins("http://15.164.197.51:8090")
 //                .addInterceptors(httpHandshakeInterceptor())
                 .withSockJS()
     }
