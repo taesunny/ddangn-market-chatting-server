@@ -11,7 +11,7 @@ class WebMvcConfig : WebMvcConfigurer {
 //    private val MAX_AGE_SECS: Long = 3600
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://15.164.197.51:8090")
+                .allowedOrigins("*")
                 .allowedMethods(
                         HttpMethod.GET.name,
                         HttpMethod.HEAD.name,
